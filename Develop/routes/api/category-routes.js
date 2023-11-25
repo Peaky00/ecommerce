@@ -59,16 +59,22 @@ router.put('/:id', async (req, res) => {
 // DELETE a category by ID
 router.delete('/:id', async (req, res) => {
   try {
-    const deletedCategory = await Category.destroy({
-      where: { id: req.params.id },
-    });
-    if (!deletedCategory) {
-      res.status(404).json({ message: 'Category not found' });
-      return;
-    }
-    res.status(200).json(deletedCategory);
+    const categoryIdToDelete = req.params.id;
+    const newCategoryId = 2; // Replace with the ID of the category to reassign products.
+
+    // Update products to reassign them to the new category.
+    await Product.update(
+      { category_id: newCategoryId },
+      {
+        where: { category_id: categoryIdToDelete },
+      }
+    );
+
+    // After updating products, you can safely delete the category.
+    await Category.destroy({ where: { id: categoryIdToDelete } });
+
+    res.status(200).json({ message: 'Category deleted successfully' });
   } catch (err) {
-    console.log(err);
     res.status(500).json(err);
   }
 });
